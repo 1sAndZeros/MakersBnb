@@ -16,13 +16,17 @@ class DatabaseConnection:
 
     def __init__(self, test_mode=False):
         self.test_mode = test_mode
+        if os.getenv('ENVIRONMENT') == 'PRODUCTION':
+            self.DATABASE_URL = os.getenv('DATABASE_URL')
+        else:
+            self.DATABASE_URL = f"postgresql://localhost/{self._database_name()}"
 
     # This method connects to PostgreSQL using the psycopg library. We connect
     # to localhost and select the database name given in argument.
     def connect(self):
         try:
             self.connection = psycopg.connect(
-                f"postgresql://localhost/{self._database_name()}",
+                self.DATABASE_URL,
                 row_factory=dict_row)
         except psycopg.OperationalError:
             raise Exception(f"Couldn't connect to the database {self._database_name()}! "
